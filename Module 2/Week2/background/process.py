@@ -11,8 +11,10 @@ def backgroundExtract(stillImage,background,fakebackground):
     fakebackground=cv2.resize(fakebackground, (640, 480))
 
     difference= cv2.absdiff(stillImage, background)
-    _, difference = cv2.threshold(difference, 15, 255, cv2.THRESH_BINARY)
-    
-    output=np.where(difference ==0, fakebackground, stillImage)
+    difference_single=np.sum(difference, axis=2)/3.0
+    difference_single = difference_single.astype(np.uint8)
+    difference_binary=np.where(difference_single >=15, 255, 0).astype(np.uint8)
+    difference_binary = np.stack((difference_binary,)*3, axis=-1)
+    output = np.where(difference_binary == 255, stillImage, fakebackground)
     cv2.imwrite('output.png', output)
 backgroundExtract('StillImage.png', 'background.png', 'FakeBackground.png')
